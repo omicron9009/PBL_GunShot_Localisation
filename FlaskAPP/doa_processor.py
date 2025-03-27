@@ -1,8 +1,13 @@
 import os
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend for Matplotlib
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
+import os
 
+PLOT_FOLDER = "static/plots"
+os.makedirs(PLOT_FOLDER, exist_ok=True)
 # Constants
 SPEED_OF_SOUND = 343  # Speed of sound in air (m/s)
 MIC_DISTANCE = 0.1     # Distance between adjacent microphones (adjust as needed)
@@ -52,7 +57,7 @@ def calculate_doa(tdoa_1_2, tdoa_1_3, tdoa_1_4):
     doa_1_2 = np.degrees(np.arcsin((SPEED_OF_SOUND * tdoa_1_2) / MIC_DISTANCE))
     doa_1_3 = np.degrees(np.arcsin((SPEED_OF_SOUND * tdoa_1_3) / (2 * MIC_DISTANCE)))
     doa_1_4 = np.degrees(np.arcsin((SPEED_OF_SOUND * tdoa_1_4) / (1.2 * MIC_DISTANCE)))
-    return np.mean([doa_1_2, doa_1_3, doa_1_4])
+    return np.mean([doa_1_2, doa_1_3, doa_1_4]) 
 
 def plot_polar(doa):
     """Plot polar coordinates."""
@@ -65,7 +70,7 @@ def plot_polar(doa):
     ax.set_rticks([])
     ax.set_title("Polar Plot of DOA", va="bottom")
     ax.legend()
-    plt.savefig(f"static/plots/polar.png")
+    plt.savefig(os.path.join(PLOT_FOLDER, "polar.png"))  # Ensure correct path
     plt.close()
 
 def plot_cartesian(x, y):
@@ -84,8 +89,9 @@ def plot_cartesian(x, y):
     plt.ylabel("Y Coordinate")
     plt.title("Gunshot DOA: Cartesian Plot")
     plt.legend()
-    plt.savefig(f"static/plots/cartesian.png")
+    plt.savefig(os.path.join(PLOT_FOLDER, "cartesian.png"))  # Ensure correct path
     plt.close()
+
 
 def process_wav_file(file_path):
     """Process WAV file: Extract features, compute DOA, and generate plots."""
@@ -98,3 +104,4 @@ def process_wav_file(file_path):
     y = RADIUS * np.sin(doa_rad)
     plot_polar(doa)
     plot_cartesian(x, y)
+    return  doa_rad, x, y

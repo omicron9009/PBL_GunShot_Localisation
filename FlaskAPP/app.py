@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, send_from_directory
 import os
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend for Matplotlib
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,13 +21,23 @@ def index():
 def upload_file():
     if 'file' not in request.files:
         return 'No file part'
+    
     file = request.files['file']
     if file.filename == '':
         return 'No selected file'
+    
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
-    process_wav_file(file_path)  # Process file & generate plots
-    return render_template('index.html', filename=file.filename)
+    
+    # Process file & get DOA values
+    result = process_wav_file(file_path)
+    
+    if result:
+        doa_rad, x, y = result
+        return render_template('index.html', filename=file.filename, doa_rad=doa_rad, x=x, y=y)
+    
+    return "Error processing file", 400
+
 
 @app.route('/plots/<filename>')
 def get_plot(filename):
